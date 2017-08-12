@@ -1,0 +1,37 @@
+library(tidyverse)
+library(readxl)
+
+offense <- read_excel("cfb_teams_2016.xlsx", sheet = "offense")
+defense <- read_excel("cfb_teams_2016.xlsx", sheet = "defense")
+
+##Yards Per Play vs. Offensive Output##
+ggplot(offense, aes(x = yards_per_play, y = score, label = team)) +
+  geom_point() +
+  geom_text(aes(label=ifelse(score>25 & yards_per_play<5.5,team," ")))
+
+
+
+#First Downs vs Offensive Output##
+ggplot(offense, aes(x = first_downs, y = score, label = team)) +
+  geom_point() +
+  geom_text(aes(label=team))
+
+
+#Total Yards vs Offensive Output#
+ggplot(offense, aes(x = total_yards, y = score, label = team)) +
+  geom_point() +
+  geom_text(aes(label=team))
+
+ggplot(offense, aes(x = time_of_poss, y = score, label = team)) +
+  geom_point() +
+  geom_text(aes(label=team))
+
+#Offense Y/P vs Score by Conference#
+offense %>%
+  group_by(conference = conf) %>%
+  summarize(correlation = cor(yards_per_play,score))
+
+#Defense Y/P vs Score Allowed by Conference#
+defense %>%
+  group_by(conference = conf) %>% 
+  summarize(correlation = cor(yards_per_play, score))
