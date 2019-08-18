@@ -1,5 +1,6 @@
 library(httr)
 library(jsonlite)
+library(dplyr)
 
 base_path <- "https://api.collegefootballdata.com"
 
@@ -95,13 +96,10 @@ get_cfb_data <- function(endpoint = "/games?",
   
   r_content <- httr::content(r, "text")
   
-  jsonlite::fromJSON(r_content)
+  jsonlite::fromJSON(r_content,
+                     flatten = TRUE)
   
 }
-
-some_data <- get_cfb_data(endpoint = "drives", 
-                          year = 2018,
-                          week = 6)
 
 
 
@@ -110,7 +108,7 @@ some_data <- get_cfb_data(endpoint = "drives",
 payload_list <- list()
 
 for (i in 1:14){
-  payload_list[[i]] <- get_cfb_data(endpoint = "drives",
+  payload_list[[i]] <- get_cfb_data(endpoint = "plays",
                                     year = 2018,
                                     week = i,
                                     seasonType = "regular")
@@ -118,4 +116,8 @@ for (i in 1:14){
   Sys.sleep(15)
 }
 
-payload <- purrr::map_df(payload_list, dplyr::bind_rows)
+all_plays_2018 <- purrr::map_df(payload_list, dplyr::bind_rows)
+
+saveRDS(all_games_2018, "all_games_2018.rds")
+saveRDS(all_drives_2018, "all_drives_2018.rds")
+saveRDS(all_plays_2018, "all_plays_2018.rds")

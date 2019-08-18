@@ -1,0 +1,107 @@
+---
+title: "CFB EDA"
+author: "Seth Goldman"
+date: "August 18, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(inspectdf)
+library(forcats)
+```
+
+### Data acquisition
+Data is queried from the `CFB Data Acquisition.R`
+
+```{r read_data}
+all_plays_2018 <- readRDS(file = "all_plays_2018.rds")
+all_drives_2018 <- readRDS(file = "all_drives_2018.rds")
+all_games_2018 <- readRDS(file = "all_games_2018.rds")
+
+```
+
+```{r preview_data}
+
+glimpse(all_games_2018)
+
+glimpse(all_drives_2018)
+
+glimpse(all_plays_2018)
+
+```
+
+```{r explore_games}
+
+all_games_2018 %>% 
+  ggplot(aes(x=home_points,y=away_points, color = week))+
+  geom_point()
+
+all_games_2018 %>% 
+  ggplot(aes(conference_game,(home_points+away_points)))+
+  geom_boxplot()+
+  coord_flip()+
+  ylab("total_points")+
+  ggtitle("total points in conference vs non-conf games")
+
+
+all_games_2018 %>% 
+  filter(conference_game == TRUE) %>% 
+  ggplot(aes(fct_reorder(
+              home_conference,
+              (home_points+away_points)
+              ),
+             (home_points+away_points)))+
+  geom_boxplot()+
+  coord_flip()+
+  ylab("total_points")+
+  xlab("conference")+
+  ggtitle("total points by conference",
+            subtitle = "conference games only")
+```
+
+
+```{r explore_drives}
+
+all_drives_2018 %>% 
+  group_by(offense) %>% 
+  summarise("total_drives" = n_distinct(id),
+            "total_plays" = sum(plays)) %>% 
+  arrange(desc(total_drives))
+
+all_drives_2018 %>%
+  count(drive_result) %>% 
+  ggplot(aes(x=reorder(drive_result,n), y = n))+
+  geom_bar(stat="identity")+
+  coord_flip()+
+  ggtitle("drive result types")+
+  xlab("")+
+  ylab("observations")
+
+
+all_drives_2018 %>% 
+  count(elapsed.minutes,elapsed.seconds)
+
+all_drives_2018 %>% 
+  filter(drive_result %in% c("PUNT","TD", "FG", "INT","DOWNS","FUMBLE","MISSED FG")) %>% 
+  filter(elapsed.minutes > 0) %>% 
+  ggplot(aes(x=fct_reorder(drive_result,elapsed.minutes),y=elapsed.minutes))+
+  geom_boxplot()+
+  coord_flip()+
+  ggtitle("drive minutes by result type")+
+  xlab("")+
+  ylab("drive time elapsed (whole mins)")
+```
+
+
+```{r explore_plays}
+all_plays_2018 %>% 
+  count(play_type) %>% 
+  ggplot(aes(x=fct_reorder(play_type,n), y = n))+
+  geom_bar(stat = "identity")+
+  coord_flip()
+
+```
+
+
